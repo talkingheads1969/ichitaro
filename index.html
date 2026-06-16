@@ -1,0 +1,1150 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="一太郎の話">
+<title>一太郎の話</title>
+<style>
+:root{
+  --yellow:#FDD835;--yellow-dark:#F9A825;--orange:#FF8F00;
+  --brown:#4E342E;--brown-light:#8D6E63;--cream:#FFFDE7;
+  --white:#fff;--green:#43A047;--blue:#1E88E5;
+  --red:#E53935;--purple:#8E24AA;--teal:#00897B;
+  --gray:#ECEFF1;--gray-dark:#90A4AE;
+  --future:#1565C0;--future-light:#E3F2FD;--today-header:#F9A825;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;background:#FFFDE7;font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;overflow:hidden;}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh;}
+
+/* HEADER */
+#header{padding:14px 16px 12px;display:flex;align-items:center;gap:10px;flex-shrink:0;transition:background 0.3s;}
+#header.mode-today{background:var(--today-header);}
+#header.mode-future{background:var(--future);}
+#header.mode-top{background:var(--today-header);}
+#header-title{font-size:20px;font-weight:900;color:white;flex:1;}
+#menu-btn{background:rgba(255,255,255,0.25);border:none;border-radius:50%;width:44px;height:44px;font-size:22px;cursor:pointer;color:white;display:flex;align-items:center;justify-content:center;}
+
+/* CHAT */
+#chat-area{flex:1;overflow-y:auto;padding:16px 12px 8px;display:flex;flex-direction:column;gap:14px;}
+
+/* BUBBLES */
+.bubble-wrap{display:flex;flex-direction:column;gap:4px;}
+.bubble{background:#FFF9C4;border-radius:18px 18px 18px 4px;padding:14px 18px;font-size:19px;font-weight:700;color:var(--brown);display:inline-block;max-width:88%;border:2px solid var(--yellow-dark);line-height:1.5;}
+.bubble.future-bubble{background:var(--future-light);border-color:#90CAF9;}
+.bubble .em{font-size:26px;margin-right:8px;vertical-align:middle;}
+.answer-wrap{display:flex;justify-content:flex-end;}
+.answer-bubble{border-radius:18px 18px 4px 18px;padding:14px 18px;font-size:19px;font-weight:700;color:white;display:inline-block;max-width:88%;line-height:1.5;}
+.answer-bubble.today{background:var(--orange);}
+.answer-bubble.future{background:var(--future);}
+
+/* CHOICES */
+.choices-wrap{display:flex;flex-direction:column;gap:8px;}
+.choices-grid{display:grid;gap:10px;}
+.g2{grid-template-columns:1fr 1fr;}.g1{grid-template-columns:1fr;}
+.choice-btn{padding:16px 10px;border-radius:18px;border:none;cursor:pointer;font-size:17px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:6px;transition:transform 0.1s;text-align:center;line-height:1.3;}
+.choice-btn:active{transform:scale(0.93);}
+.choice-btn .ci{font-size:36px;line-height:1;}
+.choice-btn.wide{flex-direction:row;gap:12px;padding:18px 16px;font-size:20px;}
+.choice-btn.wide .ci{font-size:42px;min-width:50px;}
+.c-ye{background:var(--yellow);color:var(--brown);}
+.c-or{background:var(--orange);color:#fff;}
+.c-gr{background:var(--green);color:#fff;}
+.c-bl{background:var(--blue);color:#fff;}
+.c-re{background:var(--red);color:#fff;}
+.c-pu{background:var(--purple);color:#fff;}
+.c-te{background:var(--teal);color:#fff;}
+.c-gy{background:#CFD8DC;color:var(--brown);}
+.c-fu{background:var(--future);color:#fff;}
+
+/* TOP MODE CARDS */
+.top-card{width:100%;padding:28px 20px;border-radius:24px;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:12px;transition:transform 0.1s;font-size:22px;font-weight:900;}
+.top-card:active{transform:scale(0.95);}
+.top-card .tc-icon{font-size:56px;}
+.top-card .tc-sub{font-size:15px;font-weight:500;opacity:0.85;margin-top:2px;}
+.tc-today{background:var(--yellow);color:var(--brown);}
+.tc-future{background:var(--future);color:white;}
+
+/* ADD INLINE */
+.add-row{display:flex;justify-content:center;}
+.add-btn{background:white;border:2px dashed var(--orange);border-radius:14px;padding:12px 20px;font-size:16px;font-weight:700;color:var(--orange);cursor:pointer;display:flex;align-items:center;gap:8px;width:100%;}
+.add-btn.future{border-color:var(--future);color:var(--future);}
+.add-btn:active{transform:scale(0.97);}
+.add-form{background:white;border-radius:16px;border:2px solid var(--yellow);padding:14px;display:flex;flex-direction:column;gap:10px;}
+.add-form.future{border-color:#90CAF9;}
+.add-form input{width:100%;padding:12px 14px;border-radius:12px;border:2px solid #DDD;font-size:16px;font-family:inherit;}
+.add-form input:focus{outline:none;border-color:var(--orange);}
+.add-form.future input:focus{border-color:var(--future);}
+.add-form-row{display:flex;gap:8px;}
+.af-btn{flex:1;padding:12px;border-radius:12px;border:none;cursor:pointer;font-size:15px;font-weight:700;}
+.af-save{background:var(--orange);color:white;}
+.af-save.future{background:var(--future);}
+.af-cancel{background:var(--gray);color:var(--brown-light);}
+
+/* PERSON */
+.person-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.person-btn{padding:14px 8px 16px;border-radius:18px;border:none;cursor:pointer;font-size:16px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:8px;background:var(--yellow);color:var(--brown);transition:transform 0.1s;}
+.person-btn:active{transform:scale(0.93);}
+.avatar{width:68px;height:68px;border-radius:50%;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;}
+.avatar img{width:100%;height:100%;object-fit:cover;}
+.filter-tabs{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;}
+.ftab{padding:8px 16px;border-radius:20px;border:2px solid var(--yellow-dark);background:white;font-size:14px;font-weight:700;cursor:pointer;color:var(--brown);white-space:nowrap;flex-shrink:0;}
+.ftab.on{background:var(--yellow);}
+
+/* WHEN PICKER */
+.when-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.when-btn{padding:20px 10px;border-radius:18px;border:none;cursor:pointer;font-size:18px;font-weight:700;display:flex;flex-direction:column;align-items:center;gap:8px;background:var(--future-light);color:var(--future);transition:transform 0.1s;border:2px solid #90CAF9;}
+.when-btn:active{transform:scale(0.93);}
+.when-btn .wi{font-size:34px;}
+
+/* FINISH */
+.finish-wrap{display:flex;flex-direction:column;gap:10px;}
+.summary-box{border-radius:16px;padding:18px;font-size:17px;color:var(--brown);line-height:1.9;}
+.summary-box.today{background:#FFF9C4;border:3px solid var(--yellow);}
+.summary-box.future{background:var(--future-light);border:3px solid #90CAF9;}
+.summary-box .tag{display:inline-block;border-radius:10px;padding:3px 10px;font-size:14px;margin-right:6px;vertical-align:middle;color:white;}
+.tag-today{background:var(--orange);}
+.tag-future{background:var(--future);}
+.fbtn{width:100%;padding:20px;border-radius:20px;border:none;cursor:pointer;font-size:20px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:10px;}
+.fbtn:active{transform:scale(0.96);}
+.fb-send-today{background:var(--yellow-dark);color:var(--brown);}
+.fb-send-future{background:var(--future);color:white;}
+.fb-more{background:var(--yellow);color:var(--brown);}
+.fb-reset{background:var(--gray);color:var(--brown-light);font-size:17px;}
+.sent-ok{border-radius:16px;padding:20px;font-size:20px;font-weight:700;text-align:center;color:white;}
+.sent-ok.today{background:var(--yellow-dark);color:var(--brown);}
+.sent-ok.future{background:var(--future);}
+
+/* FULLSCREEN */
+.fullscreen{display:none;position:fixed;inset:0;background:#F5F5F5;overflow-y:auto;z-index:100;flex-direction:column;}
+.fullscreen.on{display:flex;}
+.fs-hd{background:var(--orange);padding:14px 16px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.fs-title{font-size:20px;font-weight:900;color:white;flex:1;}
+.fs-back{background:rgba(255,255,255,0.25);border:none;border-radius:50%;width:44px;height:44px;font-size:22px;cursor:pointer;color:white;display:flex;align-items:center;justify-content:center;}
+.fs-body{padding:16px;display:flex;flex-direction:column;gap:14px;flex:1;}
+.acard{background:white;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;}
+.acard-title{font-size:17px;font-weight:700;color:var(--brown);border-bottom:2px solid var(--yellow);padding-bottom:8px;}
+.ai{width:100%;padding:12px 14px;border-radius:12px;border:2px solid #DDD;font-size:16px;font-family:inherit;}
+.ai:focus{outline:none;border-color:var(--orange);}
+.a-add{padding:12px 20px;border-radius:12px;border:none;cursor:pointer;font-size:15px;font-weight:700;background:var(--orange);color:white;}
+.a-del{background:var(--red);color:white;font-size:13px;padding:7px 12px;border-radius:8px;border:none;cursor:pointer;}
+.ali{display:flex;align-items:center;gap:10px;padding:10px;background:#F9F9F9;border-radius:12px;}
+.ali-name{flex:1;font-size:15px;font-weight:700;color:var(--brown);}
+.rtag{font-size:12px;padding:4px 10px;border-radius:20px;background:#FFF3E0;color:var(--brown);font-weight:700;}
+.photo-row{display:flex;align-items:center;gap:10px;}
+.photo-prev{width:52px;height:52px;border-radius:50%;overflow:hidden;background:var(--gray);display:flex;align-items:center;justify-content:center;color:var(--gray-dark);font-size:24px;flex-shrink:0;}
+.photo-prev img{width:100%;height:100%;object-fit:cover;}
+.photo-lbl{padding:10px 14px;background:var(--gray);border-radius:10px;cursor:pointer;font-size:14px;color:var(--brown);font-weight:700;}
+.hist-item{background:white;border-radius:12px;padding:12px 14px;border-left:4px solid var(--orange);}
+.hist-item.future{border-left-color:var(--future);}
+.hist-time{font-size:12px;color:var(--gray-dark);margin-bottom:4px;}
+.hist-text{font-size:15px;color:var(--brown);}
+.bot-pad{height:32px;flex-shrink:0;}
+.mode-badge{font-size:12px;padding:2px 8px;border-radius:10px;font-weight:700;margin-bottom:4px;display:inline-block;}
+.mode-badge.today{background:#FFF3E0;color:var(--orange);}
+.mode-badge.future{background:var(--future-light);color:var(--future);}
+.mode-badge.best{background:#FFF9C4;color:#F57F17;}
+.mode-badge.question{background:#F3E5F5;color:var(--purple);}
+
+/* 今日の一番 */
+#header.mode-best{background:#F57F17;}
+.answer-bubble.best{background:#F57F17;}
+.summary-box.best{background:#FFF9C4;border:3px solid #FFE082;}
+.fb-send-best{background:#F57F17;color:white;}
+.sent-ok.best{background:#F57F17;color:white;}
+.hist-item.best{border-left-color:#F57F17;}
+
+/* 一太郎からの質問 */
+#header.mode-question{background:var(--purple);}
+.answer-bubble.question{background:var(--purple);}
+.bubble.question-bubble{background:#F3E5F5;border-color:#CE93D8;}
+.summary-box.question{background:#F3E5F5;border:3px solid #CE93D8;}
+.fb-send-question{background:var(--purple);color:white;}
+.sent-ok.question{background:var(--purple);color:white;}
+.hist-item.question{border-left-color:var(--purple);}
+.tc-question{background:var(--purple);color:white;}
+
+/* ===== 今日の一番 アニメーション ===== */
+@keyframes starPop{
+  0%{transform:scale(0) rotate(-15deg);opacity:0;}
+  60%{transform:scale(1.15) rotate(5deg);opacity:1;}
+  100%{transform:scale(1) rotate(0deg);opacity:1;}
+}
+@keyframes shimmer{
+  0%,100%{box-shadow:0 0 0 0 rgba(253,216,53,0);}
+  50%{box-shadow:0 0 0 12px rgba(253,216,53,0.35);}
+}
+@keyframes confettiFall{
+  0%{transform:translateY(-20px) rotate(0deg);opacity:1;}
+  100%{transform:translateY(60px) rotate(360deg);opacity:0;}
+}
+@keyframes celebPop{
+  0%{transform:scale(0.5);opacity:0;}
+  70%{transform:scale(1.1);}
+  100%{transform:scale(1);opacity:1;}
+}
+.best-intro{
+  background:linear-gradient(135deg,#FFF9C4,#FFF3E0);
+  border:3px solid var(--yellow);
+  border-radius:24px;
+  padding:24px 16px;
+  text-align:center;
+  animation:starPop 0.5s cubic-bezier(.17,.67,.35,1.3) both;
+}
+.best-intro .star-big{font-size:56px;display:block;margin-bottom:8px;animation:shimmer 2s ease-in-out infinite;}
+.best-intro .best-title{font-size:22px;font-weight:900;color:#E65100;}
+.best-intro .best-sub{font-size:15px;color:var(--brown-light);margin-top:6px;}
+.celeb-wrap{
+  background:linear-gradient(135deg,#FFF9C4,#FFF3E0);
+  border:3px solid #FFD54F;
+  border-radius:24px;
+  padding:28px 16px;
+  text-align:center;
+  position:relative;
+  overflow:hidden;
+  animation:celebPop 0.4s ease-out both;
+}
+.celeb-wrap .celeb-icon{font-size:64px;display:block;margin-bottom:10px;}
+.celeb-wrap .celeb-text{font-size:22px;font-weight:900;color:#E65100;line-height:1.5;}
+.celeb-wrap .celeb-sub{font-size:16px;color:var(--brown-light);margin-top:8px;}
+.confetti-piece{
+  position:absolute;top:0;font-size:18px;
+  animation:confettiFall 1.2s ease-in forwards;
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="header" class="mode-top">
+    <div id="header-title" onclick="resetChat()" style="cursor:pointer;">一太郎の話</div>
+    <button id="menu-btn" onclick="openScreen('screen-menu')">☰</button>
+  </div>
+  <div id="chat-area"></div>
+</div>
+
+<!-- MENU -->
+<div class="fullscreen" id="screen-menu">
+  <div class="fs-hd">
+    <button class="fs-back" onclick="closeScreen('screen-menu')">←</button>
+    <span class="fs-title">メニュー</span>
+  </div>
+  <div class="fs-body">
+    <button class="choice-btn wide c-or" style="border-radius:16px;" onclick="closeScreen('screen-menu');resetChat()"><span class="ci">🏠</span>トップに戻る</button>
+    <button class="choice-btn wide c-ye" style="border-radius:16px;" onclick="closeScreen('screen-menu');openScreen('screen-admin')"><span class="ci">⚙️</span>登録・管理</button>
+    <button class="choice-btn wide c-bl" style="border-radius:16px;" onclick="closeScreen('screen-menu');openScreen('screen-history')"><span class="ci">📖</span>過去の話・未来の話</button>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div class="fullscreen" id="screen-admin">
+  <div class="fs-hd">
+    <button class="fs-back" onclick="closeScreen('screen-admin')">←</button>
+    <span class="fs-title">登録・管理</span>
+  </div>
+  <div class="fs-body">
+    <div class="acard">
+      <div class="acard-title">👤 人物を追加する</div>
+      <div class="photo-row">
+        <div class="photo-prev" id="photo-prev-el">📷</div>
+        <label class="photo-lbl" for="photo-input">写真を選ぶ</label>
+        <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="previewPhoto(this)">
+      </div>
+      <input class="ai" id="np-name" placeholder="名前（例：田中先生）">
+      <select class="ai" id="np-role">
+        <option value="friend">友達</option>
+        <option value="teacher">先生（学校）</option>
+        <option value="daycare">先生（放課後デイ）</option>
+        <option value="family">家族</option>
+      </select>
+      <button class="a-add" onclick="addPerson()">➕ 追加する</button>
+      <div id="person-admin-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+    <div class="acard">
+      <div class="acard-title">⭐ できごと・したいことを追加する</div>
+      <input class="ai" id="ne-text" placeholder="（例：一緒に絵を描いた）">
+      <input class="ai" id="ne-emoji" placeholder="アイコン（例：🎨）" style="font-size:22px;">
+      <button class="a-add" onclick="addEventFromAdmin()">➕ 追加する</button>
+      <div id="event-admin-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+    <div class="acard">
+      <div class="acard-title">🗺️ 場所を追加する</div>
+      <input class="ai" id="npl-name" placeholder="場所（例：おばあちゃんの家）">
+      <input class="ai" id="npl-icon" placeholder="アイコン（例：🏠）" style="font-size:22px;">
+      <button class="a-add" onclick="addPlaceFromAdmin()">➕ 追加する</button>
+      <div id="place-admin-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+    <div class="acard">
+      <div class="acard-title">❓ 一太郎からの質問を追加する</div>
+      <input class="ai" id="nq-text" placeholder="質問（例：今度どこかに行ける？）">
+      <input class="ai" id="nq-emoji" placeholder="アイコン（例：🗺️）" style="font-size:22px;">
+      <button class="a-add" onclick="addQuestionFromAdmin()">➕ 追加する</button>
+      <div id="question-admin-list" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+    <div class="acard" style="border:2px solid var(--yellow-dark);">
+      <div class="acard-title">💾 データのバックアップと復元</div>
+      <div style="font-size:14px;color:var(--brown-light);line-height:1.7;">
+        アプリを新しくするときはバックアップを取ってから新しいアプリで復元すると、登録した人物・選択肢がそのまま引き継げます。
+      </div>
+      <button class="a-add" style="background:var(--green);" onclick="exportData()">📤 バックアップする（書き出し）</button>
+      <div style="border-top:1px solid #EEE;padding-top:10px;display:flex;flex-direction:column;gap:8px;">
+        <div style="font-size:14px;font-weight:700;color:var(--brown);">📥 バックアップから復元する</div>
+        <label class="photo-lbl" for="import-input" style="text-align:center;width:100%;border-radius:12px;padding:14px;">バックアップファイルを選ぶ</label>
+        <input type="file" id="import-input" accept=".json" style="display:none" onchange="importData(this)">
+        <div id="import-status" style="font-size:14px;color:var(--green);font-weight:700;display:none;text-align:center;"></div>
+      </div>
+    </div>
+    <div class="bot-pad"></div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div class="fullscreen" id="screen-history">
+  <div class="fs-hd">
+    <button class="fs-back" onclick="closeScreen('screen-history')">←</button>
+    <span class="fs-title">過去の話・未来の話</span>
+  </div>
+  <div class="fs-body" id="history-list"></div>
+</div>
+
+<script>
+// ===== DATA =====
+const RC=['c-ye','c-or','c-gr','c-bl','c-pu','c-te','c-re'];
+const roleColors={friend:'#AB47BC',teacher:'#1E88E5',daycare:'#00897B',family:'#FF8F00'};
+const roleLabels={friend:'友達',teacher:'学校',daycare:'デイ',family:'家族'};
+
+const DEFAULTS={
+  nextId:200,
+  persons:[
+    {id:1,name:'お母さん',role:'family',photo:null},
+    {id:2,name:'お父さん',role:'family',photo:null},
+    {id:3,name:'おばあちゃん',role:'family',photo:null},
+  ],
+  events:[
+    {id:10,text:'一緒に遊んだ',emoji:'🎮'},
+    {id:11,text:'本を読んだ',emoji:'📖'},
+    {id:12,text:'話をした',emoji:'💬'},
+    {id:13,text:'優しくしてくれた',emoji:'💛'},
+    {id:14,text:'一緒に食べた',emoji:'🍱'},
+    {id:15,text:'運動した',emoji:'⚽'},
+    {id:16,text:'何か作った',emoji:'🎨'},
+    {id:17,text:'一緒に勉強した',emoji:'📚'},
+    {id:18,text:'いやなことがあった',emoji:'😢'},
+  ],
+  feelings:[
+    {id:50,text:'楽しかった！',emoji:'😄'},
+    {id:51,text:'うれしかった！',emoji:'😊'},
+    {id:52,text:'がんばった！',emoji:'💪'},
+    {id:53,text:'びっくりした！',emoji:'😲'},
+    {id:54,text:'疲れた',emoji:'😴'},
+    {id:55,text:'悲しかった',emoji:'😢'},
+    {id:56,text:'いやだった',emoji:'😠'},
+    {id:57,text:'ドキドキした',emoji:'💓'},
+  ],
+  wantsToDoFuture:[
+    {id:70,text:'本を読みたい',emoji:'📖'},
+    {id:71,text:'一緒に遊びたい',emoji:'🎮'},
+    {id:72,text:'お出かけしたい',emoji:'🚗'},
+    {id:73,text:'美味しいものを食べたい',emoji:'🍽️'},
+    {id:74,text:'電車を見たい・乗りたい',emoji:'🚃'},
+    {id:75,text:'映画・動画を見たい',emoji:'🎬'},
+    {id:76,text:'買い物に行きたい',emoji:'🛒'},
+    {id:77,text:'運動・スポーツをしたい',emoji:'⚽'},
+  ],
+  places:[
+    {id:80,name:'公園',icon:'🌳'},
+    {id:81,name:'おばあちゃんの家',icon:'🏠'},
+    {id:82,name:'動物園',icon:'🦁'},
+    {id:83,name:'水族館',icon:'🐟'},
+    {id:84,name:'電車・駅',icon:'🚃'},
+    {id:85,name:'レストラン',icon:'🍽️'},
+    {id:86,name:'図書館',icon:'📚'},
+    {id:87,name:'学校',icon:'🏫'},
+  ],
+  questions:[
+    {id:90,text:'今日仕事はどうだった？',emoji:'💼'},
+    {id:91,text:'今度どこかに行ける？',emoji:'🗺️'},
+    {id:92,text:'一緒に遊べる？',emoji:'🎮'},
+    {id:93,text:'何か美味しいものを食べに行ける？',emoji:'🍽️'},
+    {id:94,text:'今度の休みは何をする？',emoji:'🎉'},
+    {id:95,text:'一緒に本を読める？',emoji:'📖'},
+    {id:96,text:'電車に乗りに行ける？',emoji:'🚃'},
+    {id:97,text:'今日は何時に帰ってくる？',emoji:'🕐'},
+  ],
+};
+
+function loadData(){
+  try{const d=localStorage.getItem('ichitaro-v4');return d?JSON.parse(d):JSON.parse(JSON.stringify(DEFAULTS));}
+  catch(e){return JSON.parse(JSON.stringify(DEFAULTS));}
+}
+function saveData(){localStorage.setItem('ichitaro-v4',JSON.stringify(appData));}
+let appData=loadData();
+
+// ===== STATE =====
+let cs={};
+let currentMode='top'; // 'top' | 'today' | 'future'
+
+function setMode(mode){
+  currentMode=mode;
+  const hdr=document.getElementById('header');
+  hdr.className='';
+  hdr.classList.add('mode-'+mode);
+  document.getElementById('header-title').textContent=
+    mode==='today'?'今日の話':
+    mode==='future'?'未来の話':
+    mode==='best'?'今日の一番':
+    mode==='question'?'一太郎からの質問':
+    '一太郎の話';
+}
+
+function answerCls(){
+  if(currentMode==='future')return 'future';
+  if(currentMode==='best')return 'best';
+  if(currentMode==='question')return 'question';
+  return 'today';
+}
+// ===== RESET =====
+function resetChat(){
+  cs={};
+  setMode('top');
+  closeScreen('screen-menu');
+  const area=document.getElementById('chat-area');
+  area.innerHTML='';
+  addQ('top');
+}
+
+// ===== CHAT ENGINE =====
+function addQ(type){
+  const area=document.getElementById('chat-area');
+  const old=document.getElementById('finish-area');
+  if(old)old.remove();
+
+  switch(type){
+
+    case 'top':
+      appendBubble('今日はどんな話をする？','💬');
+      const topWrap=document.createElement('div');
+      topWrap.className='choices-wrap';
+      topWrap.innerHTML=`
+        <button class="top-card tc-today" onclick="startToday()">
+          <span class="tc-icon">🌅</span>
+          今日の話
+          <span class="tc-sub">今日あったこと・気持ち</span>
+        </button>
+        <button class="top-card tc-future" onclick="startFuture()">
+          <span class="tc-icon">🌟</span>
+          未来の話
+          <span class="tc-sub">したいこと・行きたい場所</span>
+        </button>
+        <button class="top-card tc-question" onclick="startQuestion()">
+          <span class="tc-icon">❓</span>
+          一太郎からの質問
+          <span class="tc-sub">お父さん・お母さんに聞く</span>
+        </button>
+      `;
+      area.appendChild(topWrap);
+      break;
+
+    // ========== 今日の一番（今日の話の締めくくり） ==========
+    case 'best-intro':
+      setTimeout(()=>{
+        const introWrap=document.createElement('div');
+        introWrap.className='choices-wrap';
+        introWrap.innerHTML=`<div class="best-intro">
+          <span class="star-big">⭐</span>
+          <div class="best-title">今日の一番は何だった？</div>
+          <div class="best-sub">一番よかったことを教えて！</div>
+        </div>`;
+        area.appendChild(introWrap);
+        scrollB();
+        setTimeout(()=>addQ('best-start'),800);
+      },400);
+      break;
+
+    case 'best-start':
+      appendChoicesWithAdd(appData.events,'events',
+        (e)=>{cs.bestWhat=e.text;addA(e.emoji+' '+e.text);addQ('best-who');}
+      );
+      break;
+
+    case 'best-who':
+      appendBubble('誰かと一緒だった？','👤');
+      appendPersonGridSimple((p)=>{
+        cs.bestWith=p.name;
+        addA('👤 '+p.name);
+        addQ('best-celeb');
+      });
+      break;
+
+    case 'best-celeb':
+      setTimeout(()=>{
+        const celebWrap=document.createElement('div');
+        celebWrap.className='choices-wrap';
+        const conf=['🌟','⭐','✨','🎉','🎊','💛','🌈','🎈'];
+        let pieces='';
+        for(let i=0;i<10;i++){
+          const left=Math.random()*88+1;
+          const delay=(Math.random()*0.8).toFixed(2);
+          const em=conf[Math.floor(Math.random()*conf.length)];
+          pieces+=`<span class="confetti-piece" style="left:${left}%;animation-delay:${delay}s;">${em}</span>`;
+        }
+        const with_=cs.bestWith&&cs.bestWith!=='一人で'?`${cs.bestWith}と一緒に！`:'';
+        celebWrap.innerHTML=`<div class="celeb-wrap">
+          ${pieces}
+          <span class="celeb-icon">🎉</span>
+          <div class="celeb-text">今日の一番は<br>「${cs.bestWhat}」！</div>
+          ${with_?`<div class="celeb-sub">${with_}</div>`:''}
+        </div>`;
+        area.appendChild(celebWrap);
+        scrollB();
+        setTimeout(()=>addQ('best-finish'),1000);
+      },200);
+      break;
+
+    case 'best-finish':
+      appendChoices([
+        {label:'お父さん・お母さんに伝える',icon:'📨',cls:'c-or',cb:()=>{
+          addA('📨 伝える！');
+          const txt=`今日の一番：${cs.bestWhat}${cs.bestWith?' （'+cs.bestWith+'と）':''}`;
+          const hist=JSON.parse(localStorage.getItem('ichitaro-history')||'[]');
+          hist.unshift({text:txt,mode:'best',time:new Date().toLocaleString('ja-JP')});
+          if(hist.length>100)hist.pop();
+          localStorage.setItem('ichitaro-history',JSON.stringify(hist));
+          setTimeout(()=>{
+            appendBubble('伝わったよ！今日もよく頑張ったね！⭐','✅');
+            setTimeout(()=>appendChoices([
+              {label:'トップに戻る',icon:'🏠',cls:'c-gy',cb:()=>resetChat()},
+            ],'g1',true),400);
+          },200);
+        }},
+        {label:'トップに戻る',icon:'🏠',cls:'c-gy',cb:()=>resetChat()},
+      ],'g2');
+      break;
+
+    // ========== 一太郎からの質問 ==========
+    case 'question-start':
+      appendBubble('何を聞きたい？','❓',false,true);
+      appendChoicesWithAdd(appData.questions,'questions',
+        (q)=>{cs.question=q.text;addA(q.emoji+' '+q.text);addFinish('question');}
+      );
+      break;
+
+    // ========== 今日の話 ==========
+    case 'today-start':
+      appendBubble('今日はどんな話をする？','💬');
+      appendChoices([
+        {label:'誰かのこと',icon:'👥',cls:'c-ye',cb:()=>{addA('👥 誰かのこと');addQ('who');}},
+        {label:'こんなことがあった',icon:'⭐',cls:'c-or',cb:()=>{addA('⭐ こんなことがあった');addQ('event');}},
+        {label:'今日の気持ち',icon:'😊',cls:'c-gr',cb:()=>{addA('😊 今日の気持ち');addQ('feeling-first');}},
+        {label:'体のこと',icon:'💪',cls:'c-bl',cb:()=>{addA('💪 体のこと');addQ('body');}},
+      ],'g1',true);
+      break;
+
+    case 'who':
+      appendBubble('誰のこと？','👤');
+      appendPersonGrid((p)=>{cs.personName=p.name;addA('👤 '+p.name);addQ('what-with-person');});
+      break;
+
+    case 'what-with-person':
+      appendBubble(cs.personName+'と何があった？','❓');
+      appendChoicesWithAdd(appData.events,'events',
+        (e)=>{cs.event=e.text;addA(e.emoji+' '+e.text);addQ('feeling-after-event');}
+      );
+      break;
+
+    case 'feeling-after-event':
+      appendBubble('気持ちはどうだった？','💭');
+      appendChoicesWithAdd(appData.feelings,'feelings',
+        (f)=>{cs.feeling=f.text;addA(f.emoji+' '+f.text);addQ('today-continue');}
+      );
+      break;
+
+    case 'event':
+      appendBubble('どんなことがあった？','⭐');
+      appendChoicesWithAdd(appData.events,'events',
+        (e)=>{cs.event=e.text;addA(e.emoji+' '+e.text);addQ('who-after-event');}
+      );
+      break;
+
+    case 'who-after-event':
+      appendBubble('誰と？','👤');
+      appendPersonGridSimple((p)=>{cs.personName=p.name;addA('👤 '+p.name);addQ('feeling-after-event');});
+      break;
+
+    case 'feeling-first':
+      appendBubble('気持ちはどうだった？','💭');
+      appendChoicesWithAdd(appData.feelings,'feelings',
+        (f)=>{cs.feeling=f.text;addA(f.emoji+' '+f.text);addQ('event-after-feeling');}
+      );
+      break;
+
+    case 'event-after-feeling':
+      appendBubble('何があった？','❓');
+      appendChoicesWithAdd(appData.events,'events',
+        (e)=>{cs.event=e.text;addA(e.emoji+' '+e.text);addQ('who-after-event');}
+      );
+      break;
+
+    case 'body':
+      appendBubble('体はどんな感じ？','💪');
+      appendChoices([
+        {label:'大丈夫！',icon:'💪',cls:'c-gr',cb:()=>{cs.body='大丈夫！';addA('💪 大丈夫！');addQ('today-continue');}},
+        {label:'少し痛い',icon:'😣',cls:'c-ye',cb:()=>{cs.body='少し痛い';addA('😣 少し痛い');addQ('body-where');}},
+        {label:'とても痛い',icon:'🤒',cls:'c-re',cb:()=>{cs.body='とても痛い';addA('🤒 とても痛い');addQ('body-where');}},
+        {label:'体が重い',icon:'😴',cls:'c-bl',cb:()=>{cs.body='体が重い';addA('😴 体が重い');addQ('today-continue');}},
+        {label:'お腹がすいた',icon:'🍽️',cls:'c-or',cb:()=>{cs.body='お腹がすいた';addA('🍽️ お腹がすいた');addQ('today-continue');}},
+        {label:'のどがかわいた',icon:'💧',cls:'c-te',cb:()=>{cs.body='のどがかわいた';addA('💧 のどがかわいた');addQ('today-continue');}},
+      ],'g2');
+      break;
+
+    case 'body-where':
+      appendBubble('どこが痛い？','🔍');
+      appendChoices([
+        {label:'頭',icon:'🧠',cls:'c-pu',cb:()=>{cs.bodyWhere='頭';addA('🧠 頭');addQ('today-continue');}},
+        {label:'お腹',icon:'🫃',cls:'c-or',cb:()=>{cs.bodyWhere='お腹';addA('お腹');addQ('today-continue');}},
+        {label:'足',icon:'🦵',cls:'c-bl',cb:()=>{cs.bodyWhere='足';addA('🦵 足');addQ('today-continue');}},
+        {label:'腕・手',icon:'💪',cls:'c-gr',cb:()=>{cs.bodyWhere='腕・手';addA('💪 腕・手');addQ('today-continue');}},
+        {label:'背中・腰',icon:'🔙',cls:'c-te',cb:()=>{cs.bodyWhere='背中・腰';addA('背中・腰');addQ('today-continue');}},
+        {label:'全体的に',icon:'😔',cls:'c-gy',cb:()=>{cs.bodyWhere='全体的に';addA('全体的に');addQ('today-continue');}},
+      ],'g2');
+      break;
+
+    case 'today-continue':
+      appendBubble('他にも話したいことある？','😊');
+      appendChoices([
+        {label:'まだある！',icon:'💬',cls:'c-ye',cb:()=>{addA('💬 まだある！');addQ('today-more');}},
+        {label:'今日の一番を決める⭐',icon:'⭐',cls:'c-or',cb:()=>{addA('⭐ 今日の一番！');addQ('best-intro');}},
+        {label:'終わり',icon:'✅',cls:'c-gy',cb:()=>{addA('✅ 終わり');addFinish('today');}},
+      ],'g1');
+      break;
+
+    case 'today-more':
+      appendBubble('何の話？','💬');
+      appendChoices([
+        {label:'誰かのこと',icon:'👥',cls:'c-ye',cb:()=>{addA('👥 誰かのこと');addQ('who');}},
+        {label:'こんなことがあった',icon:'⭐',cls:'c-or',cb:()=>{addA('⭐ こんなことがあった');addQ('event');}},
+        {label:'気持ち',icon:'😊',cls:'c-gr',cb:()=>{addA('😊 気持ち');addQ('feeling-first');}},
+        {label:'体のこと',icon:'💪',cls:'c-bl',cb:()=>{addA('💪 体のこと');addQ('body');}},
+      ],'g1',true);
+      break;
+
+    // ========== 未来の話 ==========
+    case 'future-start':
+      appendBubble('いつのことを話す？','🌟',true);
+      appendWhenPicker();
+      break;
+
+    case 'future-what':
+      appendBubble('何をしたい？','🎯',true);
+      appendChoicesWithAdd(appData.wantsToDoFuture,'wantsToDoFuture',
+        (w)=>{cs.futureWhat=w.text;addA(w.emoji+' '+w.text);}
+        ,()=>addQ('future-who')
+      );
+      break;
+
+    case 'future-who':
+      appendBubble('誰と？','👥',true);
+      appendPersonGridSimple((p)=>{
+        cs.futureWith=p.name;
+        addA('👤 '+p.name);
+        addQ('future-where');
+      });
+      break;
+
+    case 'future-where':
+      appendBubble('どこで？（なければスキップ）','🗺️',true);
+      appendChoicesWithAdd(
+        [{id:'skip',text:'どこでもいい',emoji:'🤷'},...appData.places.map(p=>({...p,text:p.name,emoji:p.icon}))],
+        'places',
+        (p)=>{
+          cs.futureWhere=(p.id==='skip')?'':p.text||p.name;
+          addA(p.id==='skip'?'🤷 どこでもいい':(p.emoji||p.icon)+' '+(p.text||p.name));
+          addQ('future-continue');
+        }
+      );
+      break;
+
+    case 'future-continue':
+      appendBubble('他にもやりたいことある？','😊',true);
+      appendChoices([
+        {label:'まだある！',icon:'💬',cls:'c-ye',cb:()=>{addA('💬 まだある！');addQ('future-more');}},
+        {label:'これで終わり',icon:'✅',cls:'c-fu',cb:()=>{addA('✅ 終わり');addFinish('future');}},
+      ],'g2');
+      break;
+
+    case 'future-more':
+      appendBubble('他に何をしたい？','🎯',true);
+      appendChoicesWithAdd(appData.wantsToDoFuture,'wantsToDoFuture',
+        (w)=>{
+          if(!cs.futureWhatExtra)cs.futureWhatExtra=[];
+          cs.futureWhatExtra.push(w.text);
+          addA(w.emoji+' '+w.text);
+        },
+        ()=>addQ('future-continue')
+      );
+      break;
+  }
+  scrollB();
+}
+
+// ===== STARTERS =====
+function startToday(){
+  disableTopCards();cs={};setMode('today');addA('🌅 今日の話');addQ('today-start');
+}
+function startFuture(){
+  disableTopCards();cs={};setMode('future');addA('🌟 未来の話');addQ('future-start');
+}
+function startQuestion(){
+  disableTopCards();cs={};setMode('question');addA('❓ 一太郎からの質問');addQ('question-start');
+}
+function disableTopCards(){
+  const wrap=document.querySelector('.choices-wrap');
+  if(wrap){wrap.style.opacity='0.35';wrap.querySelectorAll('button').forEach(b=>b.disabled=true);}
+}
+
+// ===== WHEN PICKER =====
+function appendWhenPicker(){
+  const area=document.getElementById('chat-area');
+  const wrap=document.createElement('div');
+  wrap.className='choices-wrap';
+  const grid=document.createElement('div');
+  grid.className='when-grid';
+  const whens=[
+    {label:'今日',icon:'☀️',val:'今日'},
+    {label:'明日',icon:'🌅',val:'明日'},
+    {label:'今週末',icon:'🎉',val:'今週末'},
+    {label:'来週',icon:'📅',val:'来週'},
+    {label:'来月',icon:'🗓️',val:'来月'},
+    {label:'もっと先',icon:'🌟',val:'将来'},
+  ];
+  whens.forEach(w=>{
+    const btn=document.createElement('button');
+    btn.className='when-btn';
+    btn.innerHTML=`<span class="wi">${w.icon}</span>${w.label}`;
+    btn.onclick=()=>{
+      wrap.querySelectorAll('button').forEach(b=>b.disabled=true);
+      wrap.style.opacity='0.35';
+      cs.futureWhen=w.val;
+      addA(w.icon+' '+w.label);
+      addQ('future-what');
+    };
+    grid.appendChild(btn);
+  });
+  wrap.appendChild(grid);
+  area.appendChild(wrap);
+}
+
+// ===== RENDER HELPERS =====
+function appendBubble(text,emoji,isFuture,isQuestion){
+  const area=document.getElementById('chat-area');
+  const w=document.createElement('div');
+  w.className='bubble-wrap';
+  let cls='';
+  if(isFuture||currentMode==='future')cls='future-bubble';
+  else if(isQuestion||currentMode==='question')cls='question-bubble';
+  w.innerHTML=`<div class="bubble ${cls}"><span class="em">${emoji}</span>${text}</div>`;
+  area.appendChild(w);
+}
+
+function addA(text){
+  const area=document.getElementById('chat-area');
+  area.querySelectorAll('.choices-wrap').forEach(el=>{
+    el.style.opacity='0.35';
+    el.querySelectorAll('button,input').forEach(b=>b.disabled=true);
+  });
+  const w=document.createElement('div');
+  w.className='answer-wrap';
+  w.innerHTML=`<div class="answer-bubble ${answerCls()}">${text}</div>`;
+  area.appendChild(w);
+  scrollB();
+}
+
+function appendChoices(items,gridCls,wide){
+  const area=document.getElementById('chat-area');
+  const wrap=document.createElement('div');
+  wrap.className='choices-wrap';
+  const grid=document.createElement('div');
+  grid.className=`choices-grid ${gridCls||'g2'}`;
+  items.forEach(item=>{
+    const btn=document.createElement('button');
+    btn.className=`choice-btn ${item.cls}${wide?' wide':''}`;
+    btn.innerHTML=`<span class="ci">${item.icon}</span>${item.label}`;
+    btn.onclick=()=>{
+      wrap.querySelectorAll('button').forEach(b=>b.disabled=true);
+      wrap.style.opacity='0.35';
+      item.cb();
+    };
+    grid.appendChild(btn);
+  });
+  wrap.appendChild(grid);
+  area.appendChild(wrap);
+}
+
+// onSelect: called when item chosen. onAfter: called after selection (for chaining)
+function appendChoicesWithAdd(items,dataKey,onSelect,onAfter){
+  const area=document.getElementById('chat-area');
+  const wrap=document.createElement('div');
+  wrap.className='choices-wrap';
+  const isFuture=currentMode==='future';
+
+  function renderGrid(){
+    wrap.innerHTML='';
+    const grid=document.createElement('div');
+    grid.className='choices-grid g2';
+    items.forEach((item,i)=>{
+      const btn=document.createElement('button');
+      btn.className=`choice-btn ${RC[i%RC.length]}`;
+      const displayText=item.text||(item.name||'');
+      btn.innerHTML=`<span class="ci">${item.emoji||item.icon||'✨'}</span>${displayText}`;
+      btn.onclick=()=>{
+        wrap.querySelectorAll('button,input').forEach(b=>b.disabled=true);
+        wrap.style.opacity='0.35';
+        onSelect(item);
+        if(onAfter)setTimeout(onAfter,50);
+      };
+      grid.appendChild(btn);
+    });
+    wrap.appendChild(grid);
+    const addRow=document.createElement('div');
+    addRow.className='add-row';
+    const addBtn=document.createElement('button');
+    addBtn.className=`add-btn${isFuture?' future':''}`;
+    addBtn.innerHTML='➕ ここにない！追加する';
+    addBtn.onclick=()=>showAddForm();
+    addRow.appendChild(addBtn);
+    wrap.appendChild(addRow);
+  }
+
+  function showAddForm(){
+    wrap.innerHTML='';
+    const isFu=isFuture;
+    const form=document.createElement('div');
+    form.className=`add-form${isFu?' future':''}`;
+    form.innerHTML=`
+      <div style="font-size:16px;font-weight:700;color:var(--brown);">新しい選択肢を追加</div>
+      <input id="af-emoji-i" placeholder="アイコン（例：🎸）" style="font-size:22px;">
+      <input id="af-text-i" placeholder="内容を入力">
+      <div class="add-form-row">
+        <button class="af-btn af-cancel" onclick="cancelAF()">キャンセル</button>
+        <button class="af-btn af-save${isFu?' future':''}" onclick="saveAF()">保存して選ぶ</button>
+      </div>
+    `;
+    wrap.appendChild(form);
+    setTimeout(()=>{const el=document.getElementById('af-text-i');if(el)el.focus();},100);
+    scrollB();
+    window.cancelAF=()=>{renderGrid();scrollB();};
+    window.saveAF=()=>{
+      const emoji=document.getElementById('af-emoji-i').value.trim()||'✨';
+      const text=document.getElementById('af-text-i').value.trim();
+      if(!text){alert('内容を入力してください');return;}
+      const newItem={id:appData.nextId++,text,emoji};
+      if(dataKey==='events')appData.events.push(newItem);
+      else if(dataKey==='feelings')appData.feelings.push(newItem);
+      else if(dataKey==='wantsToDoFuture')appData.wantsToDoFuture.push(newItem);
+      else if(dataKey==='places')appData.places.push({...newItem,name:text,icon:emoji});
+      saveData();
+      items.push(newItem);
+      wrap.querySelectorAll('button,input').forEach(b=>b.disabled=true);
+      wrap.style.opacity='0.35';
+      onSelect(newItem);
+      if(onAfter)setTimeout(onAfter,50);
+    };
+  }
+  renderGrid();
+  area.appendChild(wrap);
+}
+
+function appendPersonGrid(onSelect){
+  const area=document.getElementById('chat-area');
+  const wrap=document.createElement('div');
+  wrap.className='choices-wrap';
+  let filter='all';
+  function render(){
+    wrap.innerHTML='';
+    const tabRow=document.createElement('div');
+    tabRow.className='filter-tabs';
+    [['all','全員'],['friend','友達'],['teacher','学校'],['daycare','デイ'],['family','家族']].forEach(([v,l])=>{
+      const t=document.createElement('button');
+      t.className='ftab'+(v===filter?' on':'');
+      t.textContent=l;
+      t.onclick=()=>{filter=v;render();scrollB();};
+      tabRow.appendChild(t);
+    });
+    wrap.appendChild(tabRow);
+    const grid=document.createElement('div');
+    grid.className='person-grid';
+    let persons=appData.persons;
+    if(filter!=='all')persons=persons.filter(p=>p.role===filter);
+    persons.forEach(p=>{
+      const btn=document.createElement('button');
+      btn.className='person-btn';
+      const col=roleColors[p.role]||'#888';
+      const av=p.photo?`<img src="${p.photo}" alt="${p.name}">`:`<span style="font-size:26px;color:white;">${p.name[0]}</span>`;
+      btn.innerHTML=`<div class="avatar" style="background:${col};">${av}</div>${p.name}`;
+      btn.onclick=()=>{
+        wrap.querySelectorAll('button').forEach(b=>b.disabled=true);
+        wrap.style.opacity='0.35';
+        onSelect(p);
+      };
+      grid.appendChild(btn);
+    });
+    if(!persons.length)grid.innerHTML='<div style="color:#aaa;font-size:15px;text-align:center;padding:16px;grid-column:1/-1;">まだ登録されていません</div>';
+    wrap.appendChild(grid);
+  }
+  render();
+  area.appendChild(wrap);
+}
+
+function appendPersonGridSimple(onSelect){
+  const area=document.getElementById('chat-area');
+  const wrap=document.createElement('div');
+  wrap.className='choices-wrap';
+  const grid=document.createElement('div');
+  grid.className='person-grid';
+  appData.persons.forEach(p=>{
+    const btn=document.createElement('button');
+    btn.className='person-btn';
+    const col=roleColors[p.role]||'#888';
+    const av=p.photo?`<img src="${p.photo}" alt="${p.name}">`:`<span style="font-size:26px;color:white;">${p.name[0]}</span>`;
+    btn.innerHTML=`<div class="avatar" style="background:${col};">${av}</div>${p.name}`;
+    btn.onclick=()=>{
+      wrap.querySelectorAll('button').forEach(b=>b.disabled=true);
+      wrap.style.opacity='0.35';
+      onSelect(p);
+    };
+    grid.appendChild(btn);
+  });
+  const soloBtn=document.createElement('button');
+  soloBtn.className='person-btn';
+  soloBtn.style.background='#CFD8DC';
+  soloBtn.innerHTML='<div class="avatar" style="background:#90A4AE;"><span style="font-size:26px;color:white;">🙋</span></div>一人で';
+  soloBtn.onclick=()=>{
+    wrap.querySelectorAll('button').forEach(b=>b.disabled=true);
+    wrap.style.opacity='0.35';
+    onSelect({name:'一人で'});
+  };
+  grid.appendChild(soloBtn);
+  wrap.appendChild(grid);
+  area.appendChild(wrap);
+}
+
+// ===== FINISH =====
+function addFinish(mode){
+  const area=document.getElementById('chat-area');
+  const wrap=document.createElement('div');
+  wrap.className='finish-wrap';
+  wrap.id='finish-area';
+  const isF=mode==='future';
+  const isB=mode==='best';
+  const isQ=mode==='question';
+  const tagCls=isF?'tag-future':isB?'tag-best':isQ?'tag-question':'tag-today';
+
+  let parts=[];
+  if(isQ){
+    if(cs.question)parts.push(`<span class="tag" style="background:var(--purple);">質問</span>${cs.question}`);
+  } else if(isB){
+    if(cs.bestWhat)parts.push(`<span class="tag" style="background:#F57F17;">一番よかったこと</span>${cs.bestWhat}`);
+    if(cs.bestWith)parts.push(`<span class="tag" style="background:#F57F17;">誰と</span>${cs.bestWith}`);
+    if(cs.bestFeeling)parts.push(`<span class="tag" style="background:#F57F17;">気持ち</span>${cs.bestFeeling}`);
+  } else if(isF){
+    if(cs.futureWhen)parts.push(`<span class="tag tag-future">いつ</span>${cs.futureWhen}`);
+    if(cs.futureWhat)parts.push(`<span class="tag tag-future">したいこと</span>${cs.futureWhat}`);
+    if(cs.futureWhatExtra&&cs.futureWhatExtra.length)cs.futureWhatExtra.forEach(w=>parts.push(`<span class="tag tag-future">したいこと</span>${w}`));
+    if(cs.futureWith)parts.push(`<span class="tag tag-future">誰と</span>${cs.futureWith}`);
+    if(cs.futureWhere)parts.push(`<span class="tag tag-future">どこで</span>${cs.futureWhere}`);
+  } else {
+    if(cs.personName&&cs.event)parts.push(`<span class="tag tag-today">誰と</span>${cs.personName}と${cs.event}`);
+    else if(cs.personName)parts.push(`<span class="tag tag-today">誰と</span>${cs.personName}`);
+    else if(cs.event)parts.push(`<span class="tag tag-today">できごと</span>${cs.event}`);
+    if(cs.feeling)parts.push(`<span class="tag tag-today">気持ち</span>${cs.feeling}`);
+    if(cs.body){const w=cs.bodyWhere?`（${cs.bodyWhere}）`:'';parts.push(`<span class="tag tag-today">体</span>${cs.body}${w}`);}
+  }
+
+  const summaryHTML=parts.length?parts.join('<br>'):'話してくれてありがとう';
+  const sendCls=isF?'fb-send-future':isB?'fb-send-best':isQ?'fb-send-question':'fb-send-today';
+  const moreQ=isF?'future-more':isB?'today-more':isQ?'question-start':'today-more';
+  const sentMsg=isQ?'✅ 伝わったよ！答えるね！':isB?'✅ 伝わったよ！よかったね！':'✅ 伝わったよ！よく話してくれたね！';
+
+  wrap.innerHTML=`
+    <div class="summary-box ${mode}">${summaryHTML}</div>
+    <button class="fbtn ${sendCls}" onclick="doSend(this,'${mode}')">📨 お父さん・お母さんに伝える</button>
+    <button class="fbtn fb-more" onclick="document.getElementById('finish-area').remove();addQ('${moreQ}')">💬 もっと話す</button>
+    <button class="fbtn fb-reset" onclick="resetChat()">🏠 トップに戻る</button>
+  `;
+  area.appendChild(wrap);
+  scrollB();
+}
+
+function doSend(btn,mode){
+  const box=btn.closest('.finish-wrap').querySelector('.summary-box');
+  const text=box.innerText||box.textContent;
+  const history=JSON.parse(localStorage.getItem('ichitaro-history')||'[]');
+  history.unshift({text,mode,time:new Date().toLocaleString('ja-JP')});
+  if(history.length>100)history.pop();
+  localStorage.setItem('ichitaro-history',JSON.stringify(history));
+  const sentCls=mode;
+  const msg=mode==='future'?'✅ 伝わったよ！楽しみだね！':
+            mode==='best'?'✅ 伝わったよ！よかったね！':
+            mode==='question'?'✅ 伝わったよ！答えるね！':
+            '✅ 伝わったよ！よく話してくれたね！';
+  btn.closest('.finish-wrap').innerHTML=`
+    <div class="sent-ok ${sentCls}">${msg}</div>
+    <button class="fbtn fb-reset" style="margin-top:8px;" onclick="resetChat()">🏠 トップに戻る</button>
+  `;
+  scrollB();
+}
+
+function scrollB(){
+  setTimeout(()=>{const a=document.getElementById('chat-area');a.scrollTo({top:a.scrollHeight,behavior:'smooth'});},60);
+}
+
+// ===== SCREENS =====
+function openScreen(id){
+  document.getElementById(id).classList.add('on');
+  if(id==='screen-history')renderHistory();
+  if(id==='screen-admin')renderAdminLists();
+}
+function closeScreen(id){document.getElementById(id).classList.remove('on');}
+
+function renderHistory(){
+  const list=document.getElementById('history-list');
+  const history=JSON.parse(localStorage.getItem('ichitaro-history')||'[]');
+  if(!history.length){
+    list.innerHTML='<div style="color:#aaa;text-align:center;padding:40px;font-size:16px;">まだ記録がありません</div>';
+    return;
+  }
+  list.innerHTML=history.map(h=>{
+    const modeLabel=h.mode==='future'?'🌟 未来の話':h.mode==='best'?'⭐ 今日の一番':h.mode==='question'?'❓ 一太郎からの質問':'🌅 今日の話';
+    return `<div class="hist-item ${h.mode||'today'}">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+        <span class="mode-badge ${h.mode||'today'}">${modeLabel}</span>
+        <span class="hist-time">${h.time}</span>
+      </div>
+      <div class="hist-text">${h.text}</div>
+    </div>`;
+  }).join('');
+}
+
+// ===== ADMIN =====
+let newPhotoAdmin=null;
+function previewPhoto(input){
+  if(!input.files||!input.files[0])return;
+  const r=new FileReader();
+  r.onload=e=>{
+    newPhotoAdmin=e.target.result;
+    const p=document.getElementById('photo-prev-el');
+    p.innerHTML=`<img src="${newPhotoAdmin}" alt="p">`;
+  };
+  r.readAsDataURL(input.files[0]);
+}
+function addPerson(){
+  const name=document.getElementById('np-name').value.trim();
+  const role=document.getElementById('np-role').value;
+  if(!name){alert('名前を入力してください');return;}
+  appData.persons.push({id:appData.nextId++,name,role,photo:newPhotoAdmin});
+  saveData();document.getElementById('np-name').value='';newPhotoAdmin=null;
+  document.getElementById('photo-prev-el').innerHTML='📷';document.getElementById('photo-input').value='';
+  renderAdminLists();
+}
+function deletePerson(id){if(!confirm('削除しますか？'))return;appData.persons=appData.persons.filter(p=>p.id!==id);saveData();renderAdminLists();}
+function addEventFromAdmin(){
+  const text=document.getElementById('ne-text').value.trim();
+  const emoji=document.getElementById('ne-emoji').value.trim()||'✨';
+  if(!text){alert('内容を入力してください');return;}
+  appData.events.push({id:appData.nextId++,text,emoji});
+  appData.wantsToDoFuture.push({id:appData.nextId++,text,emoji});
+  saveData();document.getElementById('ne-text').value='';document.getElementById('ne-emoji').value='';renderAdminLists();
+}
+function deleteEvent(id){appData.events=appData.events.filter(e=>e.id!==id);appData.wantsToDoFuture=appData.wantsToDoFuture.filter(e=>e.id!==id);saveData();renderAdminLists();}
+function addPlaceFromAdmin(){
+  const name=document.getElementById('npl-name').value.trim();
+  const icon=document.getElementById('npl-icon').value.trim()||'📍';
+  if(!name){alert('場所を入力してください');return;}
+  appData.places.push({id:appData.nextId++,name,icon});
+  saveData();document.getElementById('npl-name').value='';document.getElementById('npl-icon').value='';renderAdminLists();
+}
+function deletePlace(id){appData.places=appData.places.filter(p=>p.id!==id);saveData();renderAdminLists();}
+
+function addQuestionFromAdmin(){
+  const text=document.getElementById('nq-text').value.trim();
+  const emoji=document.getElementById('nq-emoji').value.trim()||'❓';
+  if(!text){alert('質問を入力してください');return;}
+  appData.questions.push({id:appData.nextId++,text,emoji});
+  saveData();document.getElementById('nq-text').value='';document.getElementById('nq-emoji').value='';renderAdminLists();
+}
+function deleteQuestion(id){appData.questions=appData.questions.filter(q=>q.id!==id);saveData();renderAdminLists();}
+
+function renderAdminLists(){
+  document.getElementById('person-admin-list').innerHTML=appData.persons.map(p=>{
+    const col=roleColors[p.role]||'#888';
+    const av=p.photo?`<img src="${p.photo}" alt="${p.name}">`:`<span style="font-size:18px;color:white;">${p.name[0]}</span>`;
+    return `<div class="ali"><div class="avatar" style="width:44px;height:44px;background:${col};font-size:18px;">${av}</div><span class="ali-name">${p.name}</span><span class="rtag">${roleLabels[p.role]||p.role}</span><button class="a-del" onclick="deletePerson(${p.id})">削除</button></div>`;
+  }).join('');
+  document.getElementById('event-admin-list').innerHTML=appData.events.map(e=>
+    `<div class="ali"><span style="font-size:22px;">${e.emoji}</span><span class="ali-name">${e.text}</span><button class="a-del" onclick="deleteEvent(${e.id})">削除</button></div>`
+  ).join('');
+  document.getElementById('place-admin-list').innerHTML=appData.places.map(p=>
+    `<div class="ali"><span style="font-size:22px;">${p.icon}</span><span class="ali-name">${p.name}</span><button class="a-del" onclick="deletePlace(${p.id})">削除</button></div>`
+  ).join('');
+  document.getElementById('question-admin-list').innerHTML=appData.questions.map(q=>
+    `<div class="ali"><span style="font-size:22px;">${q.emoji}</span><span class="ali-name">${q.text}</span><button class="a-del" onclick="deleteQuestion(${q.id})">削除</button></div>`
+  ).join('');
+}
+
+// ===== BACKUP & RESTORE =====
+function exportData(){
+  // 会話履歴も含めて全部バックアップ
+  const backup={
+    version:1,
+    exportedAt:new Date().toLocaleString('ja-JP'),
+    appData:appData,
+    history:JSON.parse(localStorage.getItem('ichitaro-history')||'[]'),
+  };
+  const json=JSON.stringify(backup,null,2);
+  const blob=new Blob([json],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const date=new Date();
+  const fname=`ichitaro-backup-${date.getFullYear()}${String(date.getMonth()+1).padStart(2,'0')}${String(date.getDate()).padStart(2,'0')}.json`;
+  a.href=url;a.download=fname;a.click();
+  URL.revokeObjectURL(url);
+}
+
+function importData(input){
+  if(!input.files||!input.files[0])return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const backup=JSON.parse(e.target.result);
+      if(!backup.appData||!backup.version){
+        alert('バックアップファイルが正しくありません');return;
+      }
+      if(!confirm(`${backup.exportedAt}のバックアップを読み込みます。\n現在のデータは上書きされます。よろしいですか？`))return;
+      // appDataを復元
+      appData=backup.appData;
+      saveData();
+      // 履歴を復元
+      if(backup.history){
+        localStorage.setItem('ichitaro-history',JSON.stringify(backup.history));
+      }
+      // 表示を更新
+      renderAdminLists();
+      const st=document.getElementById('import-status');
+      st.textContent=`✅ 復元完了！（${backup.exportedAt}のバックアップ）`;
+      st.style.display='block';
+      input.value='';
+      setTimeout(()=>{st.style.display='none';},4000);
+    }catch(err){
+      alert('読み込みに失敗しました。正しいバックアップファイルを選んでください。');
+    }
+  };
+  reader.readAsText(input.files[0]);
+}
+
+// ===== INIT =====
+resetChat();
+</script>
+</body>
+</html>
